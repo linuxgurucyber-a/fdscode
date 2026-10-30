@@ -1,3 +1,16 @@
+ALGORITHM:
+
+Step 1: Start
+
+Step 2: Import the required Python modules / packages
+
+Step 3: Create or load the necessary data (arrays, DataFrames, files, etc.)
+
+Step 4: Perform the required operations / analysis / plotting as per the experiment
+
+Step 5: Display the results / output (print values or save plots)
+
+Step 6: Stop
 
 ## Linux setup (once)
 
@@ -1147,3 +1160,6 @@ if __name__ == "__main__":
 ```bash
 python -m pip install matplotlib
 ```
+------------------------------------------marakkama itha kudunga daa-------------------------------------------------------
+
+
