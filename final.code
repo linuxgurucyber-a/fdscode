@@ -1,0 +1,1149 @@
+
+## Linux setup (once)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+# Exercise 1: NumPy array properties and slicing
+
+## ex1.A.code — Array properties
+
+```python
+import numpy as np
+
+array = np.array([[1, 2, 3], [4, 2, 5]])
+print("Array:\n", array)
+print("Type:", type(array))
+print("Dimensions:", array.ndim)
+print("Size:", array.size)
+print("Element type:", array.dtype)
+```
+
+## ex1.B.code — Row slicing
+
+```python
+import numpy as np
+
+matrix = np.array([[1, 2, 3], [3, 4, 5], [4, 5, 6]])
+print("Matrix:\n", matrix)
+print("Selected row slice matrix[1:2]:\n", matrix[1:2])
+```
+
+## ex1.C.code — Column, row, and range slicing
+
+```python
+import numpy as np
+
+matrix = np.array([[1, 2, 3], [3, 4, 5], [4, 5, 6]])
+print("Second column:", matrix[..., 1])
+print("Second row:", matrix[1, ...])
+print("Columns from index 1 onward:\n", matrix[..., 1:])
+```
+
+## ex1.installs
+
+```bash
+python -m pip install numpy
+```
+
+# Exercise 2: NumPy array operations
+
+## ex2.code — Complete program (numbered sections 1-7)
+
+```python
+"""Create NumPy arrays and demonstrate common array operations."""
+
+import numpy as np
+
+
+def main():
+    print("1. Create arrays")
+    a = np.array([1, 2, 3])
+    b = np.array([[4, 5, 6], [7, 8, 9]])
+    print("a =", a)
+    print("b =\n", b)
+
+    print("\n2. Arrays with specific values")
+    zeros = np.zeros((2, 3))
+    ones = np.ones((2, 3))
+    arange = np.arange(0, 10, 2)
+    linspace = np.linspace(0, 1, 5)
+    print("Zeros:\n", zeros)
+    print("Ones:\n", ones)
+    print("Arange:", arange)
+    print("Linspace:", linspace)
+
+    print("\n3. Element-wise arithmetic")
+    x = np.array([1, 2, 3])
+    y = np.array([4, 5, 6])
+    print("Addition:", x + y)
+    print("Subtraction:", x - y)
+    print("Multiplication:", x * y)
+    print("Division:", y / x)
+    print("Power:", x**2)
+    print("Negative:", -x)
+    print("Square root:", np.sqrt(x))
+
+    print("\n4. Aggregation functions")
+    data = np.array([[1, 2], [3, 4]])
+    print("Data:\n", data)
+    print("Total sum:", np.sum(data))
+    print("Mean:", np.mean(data))
+    print("Maximum:", np.max(data))
+    print("Row sums:", np.sum(data, axis=1))
+    print("Column maxima:", np.max(data, axis=0))
+
+    print("\n5. Boolean masks and logical operations")
+    values = np.array([1, 2, 3, 4, 5])
+    mask = values > 3
+    print("Mask (values > 3):", mask)
+    print("Filtered values:", values[mask])
+    left = np.array([1, 2, 6, 4, 9])
+    right = np.array([2, 3, 4, 5, 8])
+    condition = (left < right) & (left > 2)
+    print("Condition (left < right) and (left > 2):", condition)
+
+    print("\n6. Broadcasting")
+    column = np.array([[1], [2], [3]])
+    row = np.array([10, 20, 30])
+    print("Column shape:", column.shape)
+    print("Row shape:", row.shape)
+    print("Broadcast product:\n", column * row)
+
+    print("\n7. Scalar addition")
+    matrix = np.array([[1, 2], [3, 4]])
+    print("Matrix plus 10:\n", matrix + 10)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## ex2.installs
+
+```bash
+python -m pip install numpy
+```
+
+# Exercise 3: Pandas Series and DataFrames
+
+## ex3.A.code — The Pandas Series object
+
+```python
+import pandas as pd
+
+series = pd.Series([0.25, 0.50, 0.75, 1.00])
+print(series)
+print("Values:", series.values)
+print("Index:", series.index)
+print("First value:", series[0])
+```
+
+## ex3.B.code — Series as a generalized NumPy array
+
+```python
+import pandas as pd
+
+series = pd.Series([0.25, 0.50, 0.75, 1.00], index=[2, 5, 3, 7])
+print(series)
+print("Values:", series.values)
+print("Label 5:", series[5])
+print("First two positions:\n", series.iloc[:2])
+print("Times two:\n", series * 2)
+```
+
+## ex3.C.code — Series as a specialized dictionary
+
+```python
+import pandas as pd
+
+population = pd.Series({"California": 38332521, "Texas": 26448193,
+                        "New York": 19651127, "Florida": 19552860})
+print(population)
+print("California:", population["California"])
+print("California and Florida:\n", population[["California", "Florida"]])
+print("Texas is an index label:", "Texas" in population)
+```
+
+## ex3.D.code — Constructing Series objects
+
+```python
+import pandas as pd
+
+from_scalar = pd.Series(5, index=[100, 200, 300])
+from_dict = pd.Series({"a": 1, "b": 2, "c": 3})
+selected = pd.Series({"a": 1, "b": 2, "c": 3}, index=["c", "a"])
+print("From scalar:\n", from_scalar)
+print("From dictionary:\n", from_dict)
+print("Selected dictionary labels:\n", selected)
+```
+
+## ex3.E.code — DataFrame as a generalized NumPy array
+
+```python
+import pandas as pd
+
+states = pd.DataFrame({"population": [38_332_521, 26_448_193, 19_651_127],
+                       "area": [423_967, 695_662, 141_297]},
+                      index=["California", "Texas", "New York"])
+print(states)
+print("Values as a NumPy array:\n", states.values)
+print("First row by position:\n", states.iloc[0])
+```
+
+## ex3.F.code — DataFrame as a specialized dictionary
+
+```python
+import pandas as pd
+
+states = pd.DataFrame({"population": {"California": 38_332_521, "Texas": 26_448_193},
+                       "area": {"California": 423_967, "Texas": 695_662}})
+print(states)
+print("Population column:\n", states["population"])
+print("California row:\n", states.loc["California"])
+```
+
+## ex3.G.code — Constructing DataFrame objects
+
+```python
+import numpy as np
+import pandas as pd
+
+population = pd.Series({"California": 38_332_521, "Texas": 26_448_193})
+area = pd.Series({"California": 423_967, "Texas": 695_662})
+print("From Series objects:\n", pd.DataFrame({"population": population, "area": area}))
+print("From a list of dictionaries:\n", pd.DataFrame([{"a": 1, "b": 2}, {"b": 3, "c": 4}]))
+print("From a 2-D array:\n", pd.DataFrame(np.array([[1, 2], [3, 4]]), columns=["first", "second"]))
+structured = np.zeros(2, dtype=[("A", "i8"), ("B", "f8")])
+print("From a structured array:\n", pd.DataFrame(structured))
+```
+
+## ex3.H.code — The Pandas Index object
+
+```python
+import pandas as pd
+
+index_a = pd.Index([1, 3, 5, 7, 9])
+index_b = pd.Index([2, 3, 5, 7, 11])
+print("Index:", index_a)
+print("Size:", index_a.size, "Shape:", index_a.shape, "Dimensions:", index_a.ndim)
+print("Intersection:", index_a.intersection(index_b))
+print("Union:", index_a.union(index_b))
+print("Symmetric difference:", index_a.symmetric_difference(index_b))
+```
+
+## I. Data Indexing and Selection (the manual’s heading for J and K)
+
+## ex3.J.code — Data selection in Series
+
+```python
+import pandas as pd
+
+series = pd.Series([0.25, 0.50, 0.75, 1.00], index=["a", "b", "c", "d"])
+print("By label b:", series["b"])
+print("Labels a through c:\n", series.loc["a":"c"])
+print("Positions 1 through 2:\n", series.iloc[1:3])
+print("Values between 0.3 and 0.8:\n", series[(series > 0.3) & (series < 0.8)])
+print("Fancy selection:\n", series[["a", "d"]])
+```
+
+## ex3.K.code — Data selection in DataFrame
+
+```python
+import pandas as pd
+
+frame = pd.DataFrame({"area": [423967, 695662, 141297],
+                      "population": [38332521, 26448193, 19651127]},
+                     index=["California", "Texas", "New York"])
+frame["density"] = frame["population"] / frame["area"]
+print("Population column:\n", frame["population"])
+print("California and Texas:\n", frame.loc[["California", "Texas"]])
+print("First two rows and columns:\n", frame.iloc[:2, :2])
+print("Density over 50:\n", frame.loc[frame["density"] > 50, ["population", "density"]])
+```
+
+## ex3.L.code — Ufuncs: index preservation
+
+```python
+import numpy as np
+import pandas as pd
+
+series = pd.Series([0, 1, 2, 3], index=["a", "b", "c", "d"])
+print("Original:\n", series)
+print("Exponential (labels preserved):\n", np.exp(series))
+print("Sine (labels preserved):\n", np.sin(series))
+```
+
+## ex3.M.code — Index alignment and missing values
+
+```python
+import pandas as pd
+
+left = pd.Series([2, 4, 6], index=[0, 1, 2])
+right = pd.Series([1, 3, 5], index=[1, 2, 3])
+print("Automatic Series alignment:\n", left + right)
+print("Fill missing labels with zero:\n", left.add(right, fill_value=0))
+frame_a = pd.DataFrame([[1, 2], [3, 4]], columns=["a", "b"])
+frame_b = pd.DataFrame([[10, 20], [30, 40]], columns=["b", "c"])
+print("DataFrame alignment:\n", frame_a + frame_b)
+```
+
+## ex3.N.code — Ufuncs: operations between DataFrame and Series
+
+```python
+import pandas as pd
+
+frame = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=["Q", "R", "S"], index=["row 1", "row 2"])
+column_offsets = pd.Series({"Q": 10, "R": 20, "S": 30})
+print("Subtract first row from each row:\n", frame.subtract(frame.iloc[0], axis="columns"))
+print("Add a Series across columns:\n", frame.add(column_offsets, axis="columns"))
+```
+
+## ex3.installs
+
+```bash
+python -m pip install numpy pandas
+```
+
+Manual note: section I is the umbrella heading “Data Indexing and Selection”; its examples are separated under J (Series) and K (DataFrame).
+
+# Exercise 4: Reading text, Excel, and web data; descriptive Iris analysis
+
+## ex4.A.code — Read a text file
+
+```python
+import tempfile
+from pathlib import Path
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    text_path = Path(temp_dir) / "Sample.txt"
+    text_path.write_text("Hi everyone, how are you?\n", encoding="utf-8")
+    print(text_path.read_text(encoding="utf-8"), end="")
+```
+
+## ex4.B.code — Read an Excel workbook
+
+```python
+import tempfile
+from pathlib import Path
+from openpyxl import Workbook, load_workbook
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    workbook_path = Path(temp_dir) / "Sample.xlsx"
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Sample"
+    sheet.append(["Name", "Score"])
+    sheet.append(["Asha", 92])
+    sheet.append(["Ravi", 87])
+    workbook.save(workbook_path)
+    loaded = load_workbook(workbook_path, read_only=True, data_only=True)
+    for row in loaded["Sample"].iter_rows(values_only=True):
+        print(row)
+    loaded.close()
+```
+
+## ex4.C.code — Read a webpage title
+
+```python
+import certifi
+import ssl
+import urllib.error
+import urllib.request
+from html.parser import HTMLParser
+
+class TitleParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.in_title = False
+        self.title_parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "title":
+            self.in_title = True
+
+    def handle_endtag(self, tag):
+        if tag.lower() == "title":
+            self.in_title = False
+
+    def handle_data(self, data):
+        if self.in_title:
+            self.title_parts.append(data.strip())
+
+def read_webpage():
+    print("\n4.C - Read a webpage title")
+    request = urllib.request.Request(
+        "https://example.com/",
+        headers={"User-Agent": "FDS-Lab-Student/1.0"},
+    )
+    try:
+        with urllib.request.urlopen(
+            request, timeout=10, context=ssl.create_default_context(cafile=certifi.where())
+        ) as response:
+            parser = TitleParser()
+            parser.feed(response.read().decode("utf-8", errors="replace"))
+        print("Page title:", "".join(parser.title_parts) or "(no title found)")
+    except (urllib.error.URLError, TimeoutError, OSError) as error:
+        print("Webpage could not be reached; this section needs an internet connection.")
+        print("Details:", error)
+
+read_webpage()
+```
+
+## ex4.D.code — Descriptive analysis of the Iris dataset
+
+```python
+import os
+import statistics
+import tempfile
+from collections import Counter
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+
+RESULTS = Path("results")
+def percentile(values, fraction):
+    ordered = sorted(values)
+    position = (len(ordered) - 1) * fraction
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = position - lower
+    return ordered[lower] * (1 - weight) + ordered[upper] * weight
+
+def pearson(left, right):
+    left_mean = sum(left) / len(left)
+    right_mean = sum(right) / len(right)
+    numerator = sum((x - left_mean) * (y - right_mean) for x, y in zip(left, right))
+    denominator = (
+        sum((x - left_mean) ** 2 for x in left)
+        * sum((y - right_mean) ** 2 for y in right)
+    ) ** 0.5
+    if denominator == 0:
+        raise ValueError("Correlation is undefined for a constant feature.")
+    return numerator / denominator
+
+def iris_analysis():
+    print("\n4.D - Descriptive analysis of the Iris dataset")
+    iris = load_iris()
+    rows = iris.data.tolist()
+    labels = iris.target.tolist()
+    names = iris.feature_names
+    print("Rows:", len(rows), "Columns:", len(names))
+    print("Features:", names)
+    print("Species counts:", dict(Counter(iris.target_names[index] for index in labels)))
+
+    for column, name in enumerate(names):
+        values = [row[column] for row in rows]
+        print(
+            "{}: mean={:.3f}, median={:.3f}, std={:.3f}, variance={:.3f}".format(
+                name,
+                statistics.mean(values),
+                statistics.median(values),
+                statistics.stdev(values),
+                statistics.variance(values),
+            )
+        )
+
+    print("Pearson correlation matrix:")
+    columns = [[row[column] for row in rows] for column in range(len(names))]
+    for left in columns:
+        print([round(pearson(left, right), 3) for right in columns])
+
+    sepal_width = [row[1] for row in rows]
+    q1 = percentile(sepal_width, 0.25)
+    q3 = percentile(sepal_width, 0.75)
+    iqr = q3 - q1
+    low, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+    kept = [row for row in rows if low <= row[1] <= high]
+    print("Shape before outlier filtering: ({}, {})".format(len(rows), len(names)))
+    print("Shape after filtering Sepal Width outliers: ({}, {})".format(len(kept), len(names)))
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    colors = ["tab:blue", "tab:orange", "tab:green"]
+    figure, axes = plt.subplots(1, 3, figsize=(15, 4.5))
+    for species_id, species_name in enumerate(iris.target_names):
+        species_rows = [row for row, label in zip(rows, labels) if label == species_id]
+        axes[0].scatter(
+            [row[0] for row in species_rows],
+            [row[1] for row in species_rows],
+            label=species_name,
+            color=colors[species_id],
+            s=18,
+        )
+        axes[1].scatter(
+            [row[2] for row in species_rows],
+            [row[3] for row in species_rows],
+            label=species_name,
+            color=colors[species_id],
+            s=18,
+        )
+    axes[0].set(title="Sepal measurements", xlabel="Sepal length (cm)", ylabel="Sepal width (cm)")
+    axes[1].set(title="Petal measurements", xlabel="Petal length (cm)", ylabel="Petal width (cm)")
+    axes[0].legend(fontsize="small")
+    axes[1].legend(fontsize="small")
+    axes[2].boxplot([sepal_width, [row[1] for row in kept]])
+    axes[2].set_xticks([1, 2])
+    axes[2].set_xticklabels(["All", "Filtered"])
+    axes[2].set(title="Sepal width outliers", ylabel="Sepal width (cm)")
+    figure.tight_layout()
+    output_path = RESULTS / "ex4_iris_analysis.png"
+    figure.savefig(output_path, dpi=150)
+    plt.close(figure)
+    print("Plot saved to:", output_path)
+
+iris_analysis()
+```
+
+## ex4.installs
+
+```bash
+python -m pip install openpyxl matplotlib scikit-learn certifi
+```
+
+4.C needs an internet connection. 4.D uses the Iris sample distributed with scikit-learn.
+
+# Exercise 5: Basic and three-dimensional Matplotlib plots
+
+## ex5.A.code — Basic line plot
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+results = Path("results")
+results.mkdir(parents=True, exist_ok=True)
+
+x = [1, 2, 3]
+y = [2, 4, 1]
+figure, axis = plt.subplots()
+axis.plot(x, y)
+axis.set(xlabel="x-axis", ylabel="y-axis", title="My First Graph")
+figure.tight_layout()
+figure.savefig(results / "ex5_A_basic_plot.png", dpi=150)
+plt.close(figure)
+print("Saved results/ex5_A_basic_plot.png")
+```
+
+## ex5.B.code — Multiple line series
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+results = Path("results")
+results.mkdir(parents=True, exist_ok=True)
+
+days = [1, 2, 3, 4, 5]
+first = [1, 2, 3, 4, 5]
+second = [0, 0.6, 0.2, 15, 10]
+third = [4, 2, 6, 8, 3]
+figure, axis = plt.subplots()
+axis.plot(days, first, label="1st Rep")
+axis.plot(days, second, "or", label="2nd Rep")
+axis.plot(days, third, "vg", label="3rd Rep")
+axis.set(xlabel="Day", ylabel="Temperature", title="All Features Discussed")
+axis.legend()
+figure.tight_layout()
+figure.savefig(results / "ex5_B_multiple_series.png", dpi=150)
+plt.close(figure)
+print("Saved results/ex5_B_multiple_series.png")
+```
+
+## ex5.C.code — Four plot subplots
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+results = Path("results")
+results.mkdir(parents=True, exist_ok=True)
+
+series = [[1, 2, 3, 4, 5], [0, 0.6, 0.2, 15, 10], [4, 2, 6, 8, 3], [4, 2, 6, 8, 3]]
+styles = ["sb", "or", "vg", "Dm"]
+figure, axes = plt.subplots(2, 2, figsize=(9, 7))
+for index, axis in enumerate(axes.flat):
+    values = series[index]
+    axis.plot(range(1, len(values) + 1), values, styles[index])
+    axis.set(title="{} Rep".format(index + 1), xlabel="Day", ylabel="Temperature")
+figure.tight_layout()
+figure.savefig(results / "ex5_C_subplots.png", dpi=150)
+plt.close(figure)
+print("Saved results/ex5_C_subplots.png")
+```
+
+## ex5.D.code — Three-dimensional surface plot
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+results = Path("results")
+results.mkdir(parents=True, exist_ok=True)
+import numpy as np
+
+x = np.linspace(-5, 5, 100)
+y = np.linspace(-5, 5, 100)
+x_grid, y_grid = np.meshgrid(x, y)
+z_grid = np.sin(np.sqrt(x_grid**2 + y_grid**2))
+figure = plt.figure(figsize=(8, 6))
+axis = figure.add_subplot(111, projection="3d")
+surface = axis.plot_surface(x_grid, y_grid, z_grid, cmap="viridis", edgecolor="none")
+axis.set(title="3D Surface Plot", xlabel="X Axis", ylabel="Y Axis", zlabel="Z Axis")
+figure.colorbar(surface, ax=axis, shrink=0.6, aspect=12)
+figure.tight_layout()
+figure.savefig(results / "ex5_D_3d_surface.png", dpi=150)
+plt.close(figure)
+print("Saved results/ex5_D_3d_surface.png")
+```
+
+## ex5.installs
+
+```bash
+python -m pip install matplotlib numpy
+```
+
+# Exercise 6: Geographic visualization with Basemap
+
+## ex6.code — Complete program
+
+```python
+"""Draw an India-centered map and mark several cities with Basemap."""
+
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
+
+RESULTS = Path("results")
+
+
+def main():
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    cities = {
+        "Delhi": (77.2090, 28.6139),
+        "Mumbai": (72.8777, 19.0760),
+        "Kolkata": (88.3639, 22.5726),
+        "Chennai": (80.2707, 13.0827),
+        "Bengaluru": (77.5946, 12.9716),
+    }
+
+    figure, axis = plt.subplots(figsize=(9, 8))
+    map_view = Basemap(
+        projection="merc",
+        llcrnrlon=66,
+        urcrnrlon=99,
+        llcrnrlat=5,
+        urcrnrlat=39,
+        resolution="c",
+        ax=axis,
+    )
+    map_view.drawmapboundary(fill_color="#dcebf7")
+    map_view.fillcontinents(color="#eef5e9", lake_color="#dcebf7")
+    map_view.drawcoastlines(color="#4b5563", linewidth=0.7)
+    map_view.drawcountries(color="#4b5563", linewidth=0.5)
+    map_view.drawparallels(range(5, 40, 5), labels=[1, 0, 0, 0], linewidth=0.2, fontsize=7)
+    map_view.drawmeridians(range(65, 100, 5), labels=[0, 0, 0, 1], linewidth=0.2, fontsize=7)
+
+    for city, (longitude, latitude) in cities.items():
+        x, y = map_view(longitude, latitude)
+        map_view.scatter(x, y, s=35, color="crimson", edgecolor="white", linewidth=0.6, zorder=5)
+        axis.annotate(city, (x, y), xytext=(5, 4), textcoords="offset points", fontsize=8)
+
+    axis.set_title("Selected Cities in India")
+    figure.tight_layout()
+    output_path = RESULTS / "ex6_india_map.png"
+    figure.savefig(output_path, dpi=160)
+    plt.close(figure)
+    print("Map saved to:", output_path)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## ex6.installs
+
+```bash
+python -m pip install numpy matplotlib basemap
+```
+
+This version uses Basemap’s built-in boundaries and needs no downloaded shapefiles.
+
+# Exercise 7: Diabetes data analysis and regression
+
+## ex7.A.code — Univariate analysis of the diabetes dataset
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.datasets import load_diabetes
+
+RESULTS = Path("results")
+def diabetes_frame():
+    dataset = load_diabetes()
+    return pd.DataFrame(dataset.data, columns=dataset.feature_names), pd.Series(dataset.target, name="target")
+
+def univariate_analysis():
+    print("7.A - Univariate analysis")
+    features, target = diabetes_frame()
+    frame = features.copy()
+    frame["target"] = target
+    print("Shape:", frame.shape)
+    print("Data summary:\n", frame.describe().round(3))
+    print("Mean:\n", frame.mean().round(3))
+    print("Median:\n", frame.median().round(3))
+    print("Mode:\n", frame.mode().iloc[0].round(3))
+    print("Standard deviation:\n", frame.std().round(3))
+    print("Variance:\n", frame.var().round(3))
+    print("Skewness:\n", frame.skew().round(3))
+    print("Kurtosis:\n", frame.kurtosis().round(3))
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    axes = frame.drop(columns=["target"]).hist(bins=30, figsize=(12, 10))
+    axes.ravel()[0].figure.suptitle("Diabetes Dataset Feature Histograms")
+    axes.ravel()[0].figure.tight_layout()
+    path = RESULTS / "ex7_univariate_histograms.png"
+    axes.ravel()[0].figure.savefig(path, dpi=140)
+    plt.close(axes.ravel()[0].figure)
+    print("Histogram saved to:", path)
+
+univariate_analysis()
+```
+
+## ex7.B.code — Bivariate linear regression
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_diabetes
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import cross_val_score, train_test_split
+
+def diabetes_frame():
+    dataset = load_diabetes()
+    return pd.DataFrame(dataset.data, columns=dataset.feature_names), pd.Series(dataset.target, name="target")
+
+def linear_regression_analysis(features, target):
+    print("\n7.B - Linear regression on the diabetes dataset")
+    x_train, x_test, y_train, y_test = train_test_split(
+        features, target, test_size=0.30, random_state=101
+    )
+    model = LinearRegression().fit(x_train, y_train)
+    predicted = model.predict(x_test)
+    cv_mse = cross_val_score(
+        LinearRegression(), features, target, scoring="neg_mean_squared_error", cv=10
+    )
+    print("10-fold cross-validation RMSE:", round(float(np.sqrt(-cv_mse).mean()), 3))
+    print("Test R^2:", round(float(r2_score(y_test, predicted)), 3))
+    print("Test RMSE:", round(float(np.sqrt(mean_squared_error(y_test, predicted))), 3))
+    print("Weights:", np.round(model.coef_, 3))
+    print("Intercept:", round(float(model.intercept_), 3))
+
+features, target = diabetes_frame()
+linear_regression_analysis(features, target)
+```
+
+## ex7.C.code — Bivariate logistic regression
+
+```python
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_diabetes
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+RESULTS = Path("results")
+def diabetes_frame():
+    dataset = load_diabetes()
+    return pd.DataFrame(dataset.data, columns=dataset.feature_names), pd.Series(dataset.target, name="target")
+
+def logistic_regression_analysis(features, target):
+    print("\n7.C - Logistic regression on a binary diabetes target")
+    binary_target = (target >= target.median()).astype(int)
+    x_train, x_test, y_train, y_test = train_test_split(
+        features,
+        binary_target,
+        test_size=0.30,
+        random_state=101,
+        stratify=binary_target,
+    )
+    model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, random_state=101))
+    model.fit(x_train, y_train)
+    predicted = model.predict(x_test)
+    matrix = confusion_matrix(y_test, predicted)
+    print("Accuracy:", round(float(accuracy_score(y_test, predicted)), 3))
+    print("Confusion matrix:\n", matrix)
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    figure, axis = plt.subplots(figsize=(5, 4))
+    image = axis.imshow(matrix, cmap="Blues")
+    for row in range(matrix.shape[0]):
+        for column in range(matrix.shape[1]):
+            axis.text(column, row, str(matrix[row, column]), ha="center", va="center")
+    axis.set(xticks=[0, 1], yticks=[0, 1], xlabel="Predicted", ylabel="Actual", title="Confusion Matrix")
+    figure.colorbar(image, ax=axis)
+    figure.tight_layout()
+    path = RESULTS / "ex7_logistic_confusion_matrix.png"
+    figure.savefig(path, dpi=140)
+    plt.close(figure)
+    print("Confusion matrix plot saved to:", path)
+
+features, target = diabetes_frame()
+logistic_regression_analysis(features, target)
+```
+
+## ex7.D.code — Multiple regression with the Pima diabetes dataset
+
+```python
+from io import StringIO
+from pathlib import Path
+import urllib.request
+
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
+ROOT = Path(".")
+PIMA_PATH = ROOT / "data" / "pima_diabetes.csv"
+PIMA_URL = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+PIMA_COLUMNS = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DiabetesPedigreeFunction", "Age", "Outcome"]
+def load_pima_data():
+    if PIMA_PATH.is_file():
+        print("Reading local data:", PIMA_PATH)
+        frame = pd.read_csv(PIMA_PATH, header=None)
+        if frame.shape[1] != len(PIMA_COLUMNS):
+            raise ValueError("The local Pima CSV must have 9 columns.")
+        if str(frame.iloc[0, 0]).strip().lower() == "pregnancies":
+            frame = frame.iloc[1:].reset_index(drop=True)
+        frame.columns = PIMA_COLUMNS
+        return frame.apply(pd.to_numeric, errors="raise")
+
+    print("Downloading the Pima CSV on first use (internet required)...")
+    request = urllib.request.Request(PIMA_URL, headers={"User-Agent": "FDS-Lab-Student/1.0"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        content = response.read().decode("utf-8")
+    PIMA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PIMA_PATH.write_text(content, encoding="utf-8")
+    frame = pd.read_csv(StringIO(content), header=None, names=PIMA_COLUMNS)
+    if len(frame) != 768 or frame.shape[1] != 9:
+        raise ValueError("The Pima CSV did not have the expected 768 rows and 9 columns.")
+    return frame
+
+def pima_multiple_regression():
+    print("\n7.D - Multiple regression on the Pima diabetes dataset")
+    try:
+        frame = load_pima_data()
+    except (OSError, ValueError) as error:
+        print("Pima regression skipped because its CSV could not be loaded:", error)
+        print("Place pima_diabetes.csv in the repository's data/ folder or connect to the internet.")
+        return
+
+    feature_names = ["Age", "Glucose", "BMI", "BloodPressure", "Pregnancies"]
+    x = frame[feature_names]
+    y = frame["Outcome"]
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.30, random_state=101
+    )
+    model = LinearRegression().fit(x_train, y_train)
+    predicted = model.predict(x_test)
+    print("Coefficients:", np.round(model.coef_, 4))
+    print("Intercept:", round(float(model.intercept_), 4))
+    print("Variance score (R^2):", round(float(model.score(x_test, y_test)), 3))
+    print("Test RMSE:", round(float(np.sqrt(mean_squared_error(y_test, predicted))), 3))
+
+pima_multiple_regression()
+```
+
+## ex7.installs
+
+```bash
+python -m pip install numpy pandas matplotlib scikit-learn
+```
+
+7.A-C use scikit-learn’s built-in diabetes sample. 7.D downloads the Pima CSV into `data/pima_diabetes.csv` on first run if it is not already there; that first download needs internet.
+
+# Exercise 8: Z-scores and normal distribution
+
+## ex8.code — Complete program
+
+```python
+"""Calculate z-scores and plot a sample with its normal density curve."""
+
+import math
+import os
+import random
+import statistics
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+RESULTS = Path("results")
+
+
+def main():
+    generator = random.Random(42)
+    data = [generator.gauss(50, 10) for _ in range(100)]
+    mean = statistics.mean(data)
+    standard_deviation = statistics.pstdev(data)
+    if standard_deviation == 0:
+        raise ValueError("The data must contain more than one distinct value.")
+
+    z_scores = [(value - mean) / standard_deviation for value in data]
+    print("First 10 values:", [round(value, 3) for value in data[:10]])
+    print("Mean:", round(mean, 3))
+    print("Population standard deviation:", round(standard_deviation, 3))
+    print("First 10 z-scores:", [round(value, 3) for value in z_scores[:10]])
+
+    x_min = min(data)
+    x_max = max(data)
+    x_values = [x_min + index * (x_max - x_min) / 199 for index in range(200)]
+    density = [
+        math.exp(-0.5 * ((value - mean) / standard_deviation) ** 2)
+        / (standard_deviation * math.sqrt(2 * math.pi))
+        for value in x_values
+    ]
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    figure, axis = plt.subplots(figsize=(8, 5))
+    axis.hist(data, bins=15, density=True, alpha=0.6, color="skyblue", edgecolor="black")
+    axis.plot(x_values, density, color="red", linewidth=2, label="Normal density")
+    axis.set(title="Normal Distribution with Z-Scores", xlabel="Value", ylabel="Density")
+    axis.legend()
+    figure.tight_layout()
+    output_path = RESULTS / "ex8_z_scores.png"
+    figure.savefig(output_path, dpi=150)
+    plt.close(figure)
+    print("Plot saved to:", output_path)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## ex8.installs
+
+```bash
+python -m pip install matplotlib
+```
+
+# Exercise 9: Correlation coefficients and scatter plots
+
+## ex9.code — Complete program
+
+```python
+"""Compute pairwise correlations and save a heatmap with scatter plots."""
+
+import os
+import random
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+RESULTS = Path("results")
+
+
+def pearson(left, right):
+    left_mean = sum(left) / len(left)
+    right_mean = sum(right) / len(right)
+    numerator = sum((x - left_mean) * (y - right_mean) for x, y in zip(left, right))
+    left_sum = sum((x - left_mean) ** 2 for x in left)
+    right_sum = sum((y - right_mean) ** 2 for y in right)
+    denominator = (left_sum * right_sum) ** 0.5
+    if denominator == 0:
+        raise ValueError("Correlation is undefined for a constant column.")
+    return numerator / denominator
+
+
+def main():
+    generator = random.Random(42)
+    data = {
+        "X": [generator.randint(1, 100) for _ in range(50)],
+        "Y": [generator.randint(1, 100) for _ in range(50)],
+        "Z": [generator.randint(1, 100) for _ in range(50)],
+    }
+    names = list(data)
+    matrix = [[pearson(data[left], data[right]) for right in names] for left in names]
+
+    print("Correlation coefficients:")
+    print("      " + "  ".join("{:>8}".format(name) for name in names))
+    for name, row in zip(names, matrix):
+        print("{:>5} ".format(name) + "  ".join("{:8.4f}".format(value) for value in row))
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    figure, axes = plt.subplots(2, 2, figsize=(10, 8))
+    heatmap = axes[0, 0].imshow(matrix, vmin=-1, vmax=1, cmap="coolwarm")
+    axes[0, 0].set(title="Correlation Coefficient Heatmap", xticks=range(3), yticks=range(3))
+    axes[0, 0].set_xticklabels(names)
+    axes[0, 0].set_yticklabels(names)
+    for row in range(3):
+        for column in range(3):
+            axes[0, 0].text(column, row, "{:.2f}".format(matrix[row][column]), ha="center", va="center")
+    figure.colorbar(heatmap, ax=axes[0, 0], fraction=0.046)
+
+    for axis, (x_name, y_name), color in zip(
+        [axes[0, 1], axes[1, 0], axes[1, 1]],
+        [("X", "Y"), ("X", "Z"), ("Y", "Z")],
+        ["blue", "green", "darkorange"],
+    ):
+        axis.scatter(data[x_name], data[y_name], color=color, alpha=0.8)
+        axis.set(xlabel=x_name, ylabel=y_name, title="{} versus {}".format(x_name, y_name))
+
+    figure.tight_layout()
+    output_path = RESULTS / "ex9_correlations.png"
+    figure.savefig(output_path, dpi=150)
+    plt.close(figure)
+    print("Plots saved to:", output_path)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## ex9.installs
+
+```bash
+python -m pip install matplotlib
+```
+
+# Exercise 10: Simple linear regression and R-squared
+
+## ex10.code — Complete program
+
+```python
+"""Fit and plot a simple linear regression using standard-library math."""
+
+import os
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+RESULTS = Path("results")
+
+
+def main():
+    x_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    y_values = [2, 4, 5, 4, 5, 7, 8, 9, 10, 12]
+    if len(x_values) != len(y_values) or len(x_values) < 2:
+        raise ValueError("X and Y must contain the same number of at least two values.")
+
+    x_mean = sum(x_values) / len(x_values)
+    y_mean = sum(y_values) / len(y_values)
+    denominator = sum((x - x_mean) ** 2 for x in x_values)
+    if denominator == 0:
+        raise ValueError("The independent variable X must not be constant.")
+
+    slope = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_values, y_values)) / denominator
+    intercept = y_mean - slope * x_mean
+    predictions = [intercept + slope * x for x in x_values]
+    residual_sum = sum((actual - predicted) ** 2 for actual, predicted in zip(y_values, predictions))
+    total_sum = sum((actual - y_mean) ** 2 for actual in y_values)
+    r_squared = 1 - residual_sum / total_sum if total_sum else 1.0
+
+    print("Intercept:", round(intercept, 6))
+    print("Slope:", round(slope, 6))
+    print("R^2 score:", round(r_squared, 6))
+
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    figure, axis = plt.subplots(figsize=(7, 5))
+    axis.scatter(x_values, y_values, color="blue", label="Data points")
+    axis.plot(x_values, predictions, color="red", label="Regression line")
+    axis.set(title="Simple Linear Regression", xlabel="X", ylabel="Y")
+    axis.legend()
+    figure.tight_layout()
+    output_path = RESULTS / "ex10_linear_regression.png"
+    figure.savefig(output_path, dpi=150)
+    plt.close(figure)
+    print("Plot saved to:", output_path)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## ex10.installs
+
+```bash
+python -m pip install matplotlib
+```
