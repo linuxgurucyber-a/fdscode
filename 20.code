@@ -1,0 +1,918 @@
+
+## Linux setup (once)
+
+
+python3 --version
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip python3-tk
+python3 -m venv .venv  # use Python 3.12 or 3.13
+# If python3 is 3.14 and python3.13 is installed, use this instead:
+# python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+
+----------------------------------------------------------------------------------------------------------------------------------------
+# Experiment 1: NumPy arrays: arithmetic and aggregates
+
+## ex1.code
+
+```python
+"""Experiment 1: NumPy arithmetic and aggregate functions."""
+import numpy as np
+
+first = np.array([10, 20, 30, 40])
+second = np.array([1, 2, 3, 4])
+
+print("First array:", first)
+print("Second array:", second)
+print("Addition:", first + second)
+print("Subtraction:", first - second)
+print("Multiplication:", first * second)
+print("Division:", first / second)
+print("Sum:", np.sum(first))
+print("Mean:", np.mean(first))
+print("Minimum:", np.min(first))
+print("Maximum:", np.max(first))
+```
+
+## ex1.installs
+
+```bash
+python -m pip install numpy
+```
+
+# Experiment 2: Pandas DataFrame: student indexing, slicing, and filtering
+
+## ex2.code
+
+```python
+"""Experiment 2: Pandas DataFrame indexing, slicing, and filtering."""
+import pandas as pd
+
+students = pd.DataFrame(
+    {
+        "student_id": [101, 102, 103, 104, 105],
+        "name": ["Asha", "Ben", "Charu", "Dev", "Eva"],
+        "department": ["CSE", "ECE", "CSE", "ME", "ECE"],
+        "marks": [88, 76, 93, 69, 84],
+    }
+)
+
+print("Complete student table:\n", students)
+print("\nName column:\n", students["name"])
+print("\nFirst three rows and first three columns:\n", students.iloc[:3, :3])
+print("\nStudent with ID 103:\n", students.loc[students["student_id"] == 103])
+print("\nStudents scoring at least 80:\n", students.loc[students["marks"] >= 80])
+print("\nCSE students scoring at least 80:\n", students.loc[
+    (students["department"] == "CSE") & (students["marks"] >= 80)
+])
+```
+
+## ex2.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 3: NumPy Boolean masks, filtering, and broadcasting
+
+## ex3.code
+
+```python
+"""Experiment 3: NumPy Boolean masks, filtering, and broadcasting."""
+import numpy as np
+
+marks = np.array(
+    [
+        [72, 81, 69],
+        [91, 77, 88],
+        [64, 70, 75],
+        [85, 93, 90],
+    ]
+)
+subject_bonus = np.array([5, 0, 3])
+
+print("Original marks:\n", marks)
+print("\nBoolean mask for marks >= 80:\n", marks >= 80)
+print("\nFiltered marks >= 80:", marks[marks >= 80])
+print("\nRows whose average is at least 80:\n", marks[marks.mean(axis=1) >= 80])
+print("\nSubject bonus broadcast across every student:\n", marks + subject_bonus)
+```
+
+## ex3.installs
+
+```bash
+python -m pip install numpy
+```
+
+# Experiment 4: Pandas reshape: pivot, melt, stack, loc, and iloc
+
+## ex4.code
+
+```python
+"""Experiment 4: Pandas pivot, melt, stack, loc, and iloc."""
+import pandas as pd
+
+scores = pd.DataFrame(
+    {
+        "student": ["Asha", "Asha", "Ben", "Ben", "Charu", "Charu"],
+        "semester": [1, 2, 1, 2, 1, 2],
+        "subject": ["Python", "Python", "Python", "Python", "Python", "Python"],
+        "marks": [82, 91, 76, 84, 95, 89],
+    }
+)
+
+wide = scores.pivot(index="student", columns="semester", values="marks")
+print("Long-form records:\n", scores)
+print("\nPivoted wide table:\n", wide)
+print("\nSelect a row by label (loc):\n", wide.loc["Asha"])
+print("\nSelect the first two rows by position (iloc):\n", wide.iloc[:2])
+print("\nMelt back into long form:\n", wide.reset_index().melt(
+    id_vars="student", var_name="semester", value_name="marks"
+))
+print("\nStack the semester columns into an index level:\n", wide.stack())
+```
+
+## ex4.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 5: Iris text file: load and explore with Pandas
+
+## ex5.code
+
+```python
+"""Experiment 5: Load Iris from a local text/CSV file and explore it."""
+from pathlib import Path
+
+import pandas as pd
+from sklearn.datasets import load_iris
+
+IRIS_FILE = Path("iris_data.txt")  # Change this to the path of your own CSV text file.
+
+if not IRIS_FILE.exists():
+    iris = load_iris(as_frame=True)
+    demo = iris.data.copy()
+    demo["species"] = [iris.target_names[index] for index in iris.target]
+    demo.to_csv(IRIS_FILE, index=False)
+    print(f"Created a sample Iris text file at: {IRIS_FILE.resolve()}")
+
+data = pd.read_csv(IRIS_FILE)
+print("\nFirst five rows:\n", data.head())
+print("\nDataFrame information:")
+data.info()
+print("\nShape (rows, columns):", data.shape)
+```
+
+## ex5.installs
+
+```bash
+python -m pip install pandas scikit-learn
+
+# A small sample input file is created on the first run if the file is absent.
+```
+
+If iris_data.txt is absent, this program writes a comma-separated Iris text file for practice; change IRIS_FILE to use your own file.
+
+# Experiment 6: Excel dataset: import and numeric descriptive statistics
+
+## ex6.code
+
+```python
+"""Experiment 6: Import an Excel dataset and summarize numeric columns."""
+from pathlib import Path
+
+import pandas as pd
+
+EXCEL_FILE = Path("student_marks.xlsx")  # Change this to the path of your Excel workbook.
+
+if not EXCEL_FILE.exists():
+    example = pd.DataFrame(
+        {
+            "student_id": [101, 102, 103, 104, 105],
+            "mathematics": [86, 74, 92, 68, 81],
+            "programming": [91, 79, 95, 72, 88],
+            "attendance_percent": [96, 88, 99, 81, 93],
+        }
+    )
+    example.to_excel(EXCEL_FILE, index=False)
+    print(f"Created a sample Excel workbook at: {EXCEL_FILE.resolve()}")
+
+data = pd.read_excel(EXCEL_FILE)
+print("\nFirst five rows:\n", data.head())
+print("\nDataset shape:", data.shape)
+print("\nDescriptive statistics for numeric columns:\n", data.describe())
+```
+
+## ex6.installs
+
+```bash
+python -m pip install pandas openpyxl
+
+# A small sample input file is created on the first run if the file is absent.
+```
+
+If student_marks.xlsx is absent, this program writes a sample workbook; change EXCEL_FILE to use your own Excel file.
+
+# Experiment 7: Iris dataset from a URL: first ten records
+
+## ex7.code
+
+```python
+"""Experiment 7: Read the first ten Iris records from a URL."""
+import ssl
+from io import BytesIO
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+import pandas as pd
+
+IRIS_URL = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+TIMEOUT_SECONDS = 20
+
+try:
+    request = Request(IRIS_URL, headers={"User-Agent": "FDS-Lab-Iris-Reader/1.0"})
+    with urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        csv_bytes = response.read()
+    iris = pd.read_csv(BytesIO(csv_bytes))
+    if iris.empty:
+        raise ValueError("The URL returned an empty CSV file.")
+except HTTPError as error:
+    raise SystemExit(f"HTTP error {error.code} while reading {IRIS_URL}: {error.reason}") from error
+except ssl.SSLCertVerificationError as error:
+    raise SystemExit(f"HTTPS certificate verification failed for {IRIS_URL}: {error}") from error
+except TimeoutError as error:
+    raise SystemExit(f"Timed out after {TIMEOUT_SECONDS} seconds while reading {IRIS_URL}.") from error
+except URLError as error:
+    reason = error.reason
+    if isinstance(reason, ssl.SSLCertVerificationError):
+        message = f"HTTPS certificate verification failed: {reason}"
+    elif isinstance(reason, TimeoutError):
+        message = f"connection timed out after {TIMEOUT_SECONDS} seconds"
+    else:
+        message = f"network error: {reason}"
+    raise SystemExit(f"Could not read {IRIS_URL} ({message}). Check the URL and internet connection.") from error
+except (ValueError, pd.errors.ParserError) as error:
+    raise SystemExit(f"Could not parse Iris CSV from {IRIS_URL}: {error}") from error
+
+print("Iris data source:", IRIS_URL)
+print("First 10 records:\n", iris.head(10).to_string(index=False))
+```
+
+## ex7.installs
+
+```bash
+python -m pip install pandas
+
+# Internet is required to read the Iris CSV URL.
+```
+
+This program reads a live CSV from the internet using verified HTTPS. Change IRIS_URL near the top of the code to use another Iris CSV URL. It reports HTTP, certificate, timeout, and network errors clearly.
+
+# Experiment 8: Imported dataset: shape, types, missing values, and summary
+
+## ex8.code
+
+```python
+"""Experiment 8: Import data and inspect shape, types, missing values, and stats."""
+from pathlib import Path
+
+import pandas as pd
+
+DATA_FILE = Path("sample_dataset.csv")  # Change this to your own CSV file.
+
+if not DATA_FILE.exists():
+    sample = pd.DataFrame(
+        {
+            "student_id": [1, 2, 3, 4, 5],
+            "age": [18, 19, None, 20, 18],
+            "marks": [82.5, 76.0, 91.0, None, 88.5],
+            "department": ["CSE", "ECE", "CSE", "ME", "ECE"],
+        }
+    )
+    sample.to_csv(DATA_FILE, index=False)
+    print(f"Created a sample dataset at: {DATA_FILE.resolve()}")
+
+data = pd.read_csv(DATA_FILE)
+print("\nShape (rows, columns):", data.shape)
+print("\nColumn data types:\n", data.dtypes)
+print("\nMissing values per column:\n", data.isna().sum())
+print("\nSummary statistics:\n", data.describe(include="all").transpose())
+```
+
+## ex8.installs
+
+```bash
+python -m pip install pandas
+
+# A small sample input file is created on the first run if the file is absent.
+```
+
+If sample_dataset.csv is absent, this program creates a sample CSV with missing values; change DATA_FILE to analyze your own CSV.
+
+# Experiment 9: Student records grouped by department
+
+## ex9.code
+
+```python
+"""Experiment 9: Group student records by department."""
+import pandas as pd
+
+students = pd.DataFrame(
+    {
+        "student": ["Asha", "Ben", "Charu", "Dev", "Eva", "Farhan"],
+        "department": ["CSE", "ECE", "CSE", "ME", "ECE", "CSE"],
+        "marks": [88, 76, 93, 69, 84, 81],
+    }
+)
+
+summary = students.groupby("department").agg(
+    student_count=("student", "count"),
+    average_marks=("marks", "mean"),
+    maximum_marks=("marks", "max"),
+)
+print("Student records:\n", students)
+print("\nCount, average, and maximum marks by department:\n", summary.round(2))
+```
+
+## ex9.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 10: Grouped data with multiple aggregations
+
+## ex10.code
+
+```python
+"""Experiment 10: Perform several aggregations on grouped data."""
+import pandas as pd
+
+students = pd.DataFrame(
+    {
+        "department": ["CSE", "ECE", "CSE", "ME", "ECE", "CSE", "ME"],
+        "student": ["Asha", "Ben", "Charu", "Dev", "Eva", "Farhan", "Gita"],
+        "marks": [88, 76, 93, 69, 84, 81, 90],
+        "attendance": [96, 88, 99, 81, 93, 90, 95],
+    }
+)
+
+summary = students.groupby("department").agg(
+    student_count=("student", "count"),
+    marks_mean=("marks", "mean"),
+    marks_min=("marks", "min"),
+    marks_max=("marks", "max"),
+    attendance_mean=("attendance", "mean"),
+)
+print("Student records:\n", students)
+print("\nMultiple grouped aggregations:\n", summary.round(2))
+```
+
+## ex10.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 11: Merge student details and exam marks
+
+## ex11.code
+
+```python
+"""Experiment 11: Merge student details with exam marks on a common key."""
+import pandas as pd
+
+details = pd.DataFrame(
+    {
+        "student_id": [101, 102, 103, 104],
+        "name": ["Asha", "Ben", "Charu", "Dev"],
+        "department": ["CSE", "ECE", "CSE", "ME"],
+    }
+)
+exam_marks = pd.DataFrame(
+    {
+        "student_id": [101, 102, 103, 105],
+        "exam": ["FDS", "FDS", "FDS", "FDS"],
+        "marks": [88, 76, 93, 80],
+    }
+)
+
+merged = pd.merge(details, exam_marks, on="student_id", how="inner")
+print("Student details:\n", details)
+print("\nExam marks:\n", exam_marks)
+print("\nInner merge on student_id:\n", merged)
+```
+
+## ex11.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 12: Hierarchical MultiIndex record lookup
+
+## ex12.code
+
+```python
+"""Experiment 12: Create and query a hierarchical Pandas index."""
+import pandas as pd
+
+students = pd.DataFrame(
+    {
+        "department": ["CSE", "CSE", "ECE", "ECE", "ME"],
+        "student_id": [101, 102, 103, 104, 105],
+        "name": ["Asha", "Charu", "Ben", "Eva", "Dev"],
+        "marks": [88, 93, 76, 84, 69],
+    }
+).set_index(["department", "student_id"]).sort_index()
+
+print("MultiIndex DataFrame:\n", students)
+print("\nAll records in the CSE department:\n", students.loc["CSE"])
+print("\nOne record by both index levels:\n", students.loc[("ECE", 103)])
+print("\nSelect all marks using the second index level:\n", students.xs(
+    104, level="student_id"
+))
+```
+
+## ex12.installs
+
+```bash
+python -m pip install pandas
+```
+
+# Experiment 13: Monthly sales line chart and bar chart
+
+## ex13.code
+
+```python
+"""Experiment 13: Monthly sales line chart and bar chart."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+sales = [12000, 14500, 13200, 17800, 16500, 21000]
+
+figure, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].plot(months, sales, marker="o", color="navy", label="Sales")
+axes[0].set(title="Monthly Sales — Line Chart", xlabel="Month", ylabel="Sales")
+axes[0].grid(True, alpha=0.3)
+axes[0].legend()
+axes[1].bar(months, sales, color="cornflowerblue", label="Sales")
+axes[1].set(title="Monthly Sales — Bar Chart", xlabel="Month", ylabel="Sales")
+axes[1].legend()
+figure.tight_layout()
+save_and_show(figure, "results/ex13_monthly_sales.png")
+```
+
+## ex13.installs
+
+```bash
+python -m pip install matplotlib
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 14: Interactive plot that responds to a slider
+
+## ex14.code
+
+```python
+"""Experiment 14: Interactive plot whose content responds to a slider."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def has_interactive_desktop():
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    return gui_backend and (not sys.platform.startswith("linux") or has_display)
+
+
+output_path = Path("results/ex14_interactive_slider.png")
+output_path.parent.mkdir(parents=True, exist_ok=True)
+x = np.linspace(0, 2 * np.pi, 300)
+figure, axis = plt.subplots(figsize=(8, 5))
+figure.subplots_adjust(bottom=0.25)
+line, = axis.plot(x, np.sin(x), color="purple", label="sin(x)")
+axis.set(title="Move the slider to change the wave", xlabel="x", ylabel="Amplitude")
+axis.set_ylim(-3, 3)
+axis.grid(True, alpha=0.3)
+axis.legend()
+
+if has_interactive_desktop():
+    from matplotlib.widgets import Slider
+
+    slider_axis = figure.add_axes([0.18, 0.08, 0.65, 0.04])
+    amplitude_slider = Slider(slider_axis, "Amplitude", 0.1, 3.0, valinit=1.0)
+
+    def update_plot(amplitude):
+        line.set_ydata(amplitude * np.sin(x))
+        figure.canvas.draw_idle()
+        figure.savefig(output_path, dpi=150, bbox_inches="tight")
+
+    amplitude_slider.on_changed(update_plot)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    print(f"Saved initial plot to {output_path}. Move the slider to update the graph.")
+    try:
+        plt.show()
+    except Exception as error:
+        print(f"The interactive window could not open: {error}")
+    plt.close(figure)
+else:
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    print(
+        f"Saved a static preview to {output_path}; the interactive slider needs "
+        "a Linux graphical desktop and an interactive Matplotlib backend."
+    )
+    plt.close(figure)
+```
+
+## ex14.installs
+
+```bash
+python -m pip install matplotlib numpy
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+On a desktop, move the amplitude slider and watch the curve change. Headless systems can only save the static preview.
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 15: Pie chart and histogram
+
+## ex15.code
+
+```python
+"""Experiment 15: Pie chart for categories and histogram for numeric data."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+departments = ["CSE", "ECE", "ME", "Civil"]
+student_counts = [32, 24, 18, 16]
+marks = [54, 62, 67, 71, 73, 75, 78, 79, 81, 82, 85, 88, 91, 95]
+
+figure, axes = plt.subplots(1, 2, figsize=(11, 5))
+axes[0].pie(student_counts, labels=departments, autopct="%1.1f%%", startangle=90)
+axes[0].set_title("Students by Department")
+axes[1].hist(marks, bins=6, color="seagreen", edgecolor="black")
+axes[1].set(title="Distribution of Exam Marks", xlabel="Marks", ylabel="Number of students")
+figure.tight_layout()
+save_and_show(figure, "results/ex15_pie_and_histogram.png")
+```
+
+## ex15.installs
+
+```bash
+python -m pip install matplotlib
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 16: Iris 3D scatter plot
+
+## ex16.code
+
+```python
+"""Experiment 16: 3D scatter plot of three Iris measurements."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+iris = load_iris()
+measurements = iris.data
+target = iris.target
+figure = plt.figure(figsize=(9, 7))
+axis = figure.add_subplot(111, projection="3d")
+colors = ["tab:blue", "tab:orange", "tab:green"]
+
+for class_id, species in enumerate(iris.target_names):
+    selected = target == class_id
+    axis.scatter(
+        measurements[selected, 0],
+        measurements[selected, 1],
+        measurements[selected, 2],
+        color=colors[class_id],
+        label=species,
+        s=35,
+        alpha=0.8,
+    )
+
+axis.set_xlabel("Sepal length (cm)")
+axis.set_ylabel("Sepal width (cm)")
+axis.set_zlabel("Petal length (cm)")
+axis.set_title("Iris Dataset: 3D Scatter Plot")
+axis.legend(title="Species")
+save_and_show(figure, "results/ex16_iris_3d_scatter.png")
+```
+
+## ex16.installs
+
+```bash
+python -m pip install matplotlib scikit-learn
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 17: Customized 3D plot with labels, title, and legend
+
+## ex17.code
+
+```python
+"""Experiment 17: Customize a 3D plot with labels, title, and legend."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+t = np.linspace(0, 2 * np.pi, 200)
+figure = plt.figure(figsize=(9, 7))
+axis = figure.add_subplot(111, projection="3d")
+axis.plot(np.cos(t), np.sin(t), t, color="darkorange", label="Helix")
+axis.plot(np.cos(t), np.sin(t), np.zeros_like(t), color="royalblue", label="Circle at z = 0")
+axis.set_xlabel("X coordinate")
+axis.set_ylabel("Y coordinate")
+axis.set_zlabel("Z coordinate")
+axis.set_title("Customized 3D Plot")
+axis.legend()
+save_and_show(figure, "results/ex17_3d_customized.png")
+```
+
+## ex17.installs
+
+```bash
+python -m pip install matplotlib numpy
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 18: Basemap world map with coastlines and country borders
+
+## ex18.code
+
+```python
+"""Experiment 18: Draw a world map with coastlines and country borders."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+figure, axis = plt.subplots(figsize=(12, 6))
+world = Basemap(
+    projection="cyl",
+    llcrnrlon=-180,
+    urcrnrlon=180,
+    llcrnrlat=-60,
+    urcrnrlat=85,
+    resolution="c",
+    ax=axis,
+)
+world.drawmapboundary(fill_color="lightblue")
+world.fillcontinents(color="wheat", lake_color="lightblue")
+world.drawcoastlines(linewidth=0.7)
+world.drawcountries(linewidth=0.5, color="dimgray")
+axis.set_title("World Map: Coastlines and Country Borders")
+save_and_show(figure, "results/ex18_world_map.png")
+```
+
+## ex18.installs
+
+```bash
+python -m pip install matplotlib basemap
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 19: Map selected latitude/longitude locations
+
+## ex19.code
+
+```python
+"""Experiment 19: Plot selected cities from latitude and longitude coordinates."""
+import os
+import sys
+from pathlib import Path
+
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
+
+def save_and_show(figure, output_path):
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(output_path, dpi=150, bbox_inches="tight")
+    backend = matplotlib.get_backend().lower()
+    gui_backend = any(name in backend for name in ("gtk", "macosx", "qt", "tk", "wx"))
+    has_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if not gui_backend or (sys.platform.startswith("linux") and not has_display):
+        print(f"Saved {output_path}; no graphical desktop/backend is available to open a window.")
+    else:
+        try:
+            plt.show()
+        except Exception as error:
+            print(f"Saved {output_path}, but the plot window could not open: {error}")
+    plt.close(figure)
+
+
+locations = {
+    "New Delhi": (28.6139, 77.2090),
+    "Mumbai": (19.0760, 72.8777),
+    "Bengaluru": (12.9716, 77.5946),
+    "London": (51.5072, -0.1276),
+    "New York": (40.7128, -74.0060),
+    "Tokyo": (35.6762, 139.6503),
+    "Sydney": (-33.8688, 151.2093),
+}
+
+figure, axis = plt.subplots(figsize=(12, 6))
+world = Basemap(
+    projection="cyl",
+    llcrnrlon=-180,
+    urcrnrlon=180,
+    llcrnrlat=-60,
+    urcrnrlat=85,
+    resolution="c",
+    ax=axis,
+)
+world.drawmapboundary(fill_color="lightblue")
+world.fillcontinents(color="whitesmoke", lake_color="lightblue")
+world.drawcoastlines(linewidth=0.6)
+world.drawcountries(linewidth=0.4, color="gray")
+for city, (latitude, longitude) in locations.items():
+    x, y = world(longitude, latitude)
+    axis.scatter(x, y, marker="o", color="crimson", s=28, zorder=5)
+    axis.annotate(city, (x, y), xytext=(4, 4), textcoords="offset points", fontsize=8)
+axis.set_title("Selected Locations from Latitude and Longitude")
+save_and_show(figure, "results/ex19_selected_locations.png")
+```
+
+## ex19.installs
+
+```bash
+python -m pip install matplotlib basemap
+
+# Ubuntu/Debian graphical desktop: install Tk support once if plot windows do not open.
+sudo apt-get install -y python3-tk
+```
+
+This program saves its image under results/. A visible graph window requires a Linux desktop session, an interactive Matplotlib backend, and Tk support (python3-tk on Ubuntu/Debian).
+
+# Experiment 20: Mean, median, mode, variance, and standard deviation
+
+## ex20.code
+
+```python
+"""Experiment 20: Mean, median, mode, variance, and standard deviation."""
+from statistics import mean, median, multimode, stdev, variance
+
+values = [12, 15, 15, 18, 20, 22, 25, 15, 28, 30]
+
+print("Dataset:", values)
+print("Count:", len(values))
+print("Mean:", mean(values))
+print("Median:", median(values))
+print("Mode(s):", multimode(values))
+print("Sample variance:", variance(values))
+print("Sample standard deviation:", stdev(values))
+```
+
+## ex20.installs
+
+```bash
+# No pip package needed; this program uses Python's standard library.
+```
+
