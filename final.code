@@ -1386,3 +1386,13 @@ sudo apt-get install -y python3-tk
 python -m pip install matplotlib
 ```
 
+deletion
+
+git credential-cache exit 2>/dev/null
+gh auth logout --hostname github.com 2>/dev/null
+rm -f ~/.gitconfig
+rm -f ~/.git-credentials
+rm -f ~/.config/git/config
+rm -f ~/.config/git/credentials
+rm -rf ~/.config/gh
+rm -rf fdscode
