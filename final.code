@@ -1,23 +1,12 @@
-ALGORITHM:
-
-Step 1: Start
-
-Step 2: Import the required Python modules / packages
-
-Step 3: Create or load the necessary data (arrays, DataFrames, files, etc.)
-
-Step 4: Perform the required operations / analysis / plotting as per the experiment
-
-Step 5: Display the results / output (print values or save plots)
-
-Step 6: Stop
-
 ## Linux setup (once)
 
 ```bash
+python3 --version
 sudo apt-get update
-sudo apt-get install -y python3 python3-venv python3-pip
-python3 -m venv .venv
+sudo apt-get install -y python3 python3-venv python3-pip python3-tk
+python3 -m venv .venv  # use this when python3 is Python 3.12 or 3.13
+# If python3 is 3.14 and python3.13 is installed, use this instead:
+# python3.13 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -363,15 +352,20 @@ with tempfile.TemporaryDirectory() as temp_dir:
 ## ex4.C.code — Read a webpage title
 
 ```python
-import certifi
+import http.client
 import ssl
+import urllib.parse
 import urllib.error
 import urllib.request
 from html.parser import HTMLParser
 
+WEBPAGE_URL = "https://example.com/"  # Change this to the page you want to read.
+TIMEOUT_SECONDS = 10
+
+
 class TitleParser(HTMLParser):
     def __init__(self):
-        HTMLParser.__init__(self)
+        super().__init__()
         self.in_title = False
         self.title_parts = []
 
@@ -385,24 +379,54 @@ class TitleParser(HTMLParser):
 
     def handle_data(self, data):
         if self.in_title:
-            self.title_parts.append(data.strip())
+            self.title_parts.append(data)
 
-def read_webpage():
-    print("\n4.C - Read a webpage title")
+
+def read_webpage(url=WEBPAGE_URL):
+    print("4.C - Read a webpage title")
+    try:
+        parsed_url = urllib.parse.urlsplit(url)
+    except ValueError as error:
+        print("Invalid URL:", error)
+        return
+    if parsed_url.scheme.lower() not in ("http", "https") or not parsed_url.netloc:
+        print("Invalid URL. Use a complete http:// or https:// address.")
+        return
+
     request = urllib.request.Request(
-        "https://example.com/",
+        url,
         headers={"User-Agent": "FDS-Lab-Student/1.0"},
     )
     try:
         with urllib.request.urlopen(
-            request, timeout=10, context=ssl.create_default_context(cafile=certifi.where())
+            request,
+            timeout=TIMEOUT_SECONDS,
+            context=ssl.create_default_context(),
         ) as response:
-            parser = TitleParser()
-            parser.feed(response.read().decode("utf-8", errors="replace"))
-        print("Page title:", "".join(parser.title_parts) or "(no title found)")
-    except (urllib.error.URLError, TimeoutError, OSError) as error:
-        print("Webpage could not be reached; this section needs an internet connection.")
-        print("Details:", error)
+            charset = response.headers.get_content_charset() or "utf-8"
+            page = response.read()
+            try:
+                html = page.decode(charset, errors="replace")
+            except LookupError:
+                html = page.decode("utf-8", errors="replace")
+        parser = TitleParser()
+        parser.feed(html)
+        parser.close()
+        title = " ".join("".join(parser.title_parts).split()) or "(no title found)"
+        print("Page title:", title)
+    except urllib.error.HTTPError as error:
+        print("HTTP error while reading {}: {} {}".format(url, error.code, error.reason))
+    except http.client.HTTPException as error:
+        print("HTTP protocol error while reading {}: {}".format(url, error))
+    except urllib.error.URLError as error:
+        reason = error.reason
+        if isinstance(reason, ssl.SSLCertVerificationError):
+            print("HTTPS certificate verification failed for {}: {}".format(url, reason))
+        else:
+            print("Network error while reading {}: {}".format(url, reason))
+    except (TimeoutError, ssl.SSLError, OSError, ValueError) as error:
+        print("Could not read {}: {}".format(url, error))
+
 
 read_webpage()
 ```
@@ -411,6 +435,7 @@ read_webpage()
 
 ```python
 import os
+import sys
 import statistics
 import tempfile
 from collections import Counter
@@ -418,8 +443,23 @@ from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 from sklearn.datasets import load_iris
 
 RESULTS = Path("results")
@@ -509,6 +549,7 @@ def iris_analysis():
     figure.tight_layout()
     output_path = RESULTS / "ex4_iris_analysis.png"
     figure.savefig(output_path, dpi=150)
+    show_saved_figure()
     plt.close(figure)
     print("Plot saved to:", output_path)
 
@@ -518,10 +559,12 @@ iris_analysis()
 ## ex4.installs
 
 ```bash
-python -m pip install openpyxl matplotlib scikit-learn certifi
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
+python -m pip install openpyxl matplotlib scikit-learn
 ```
 
-4.C needs an internet connection. 4.D uses the Iris sample distributed with scikit-learn.
+4.C reads `WEBPAGE_URL` (default `https://example.com/`), so change that variable to use another page; the reader needs internet and verifies HTTPS certificates. 4.D uses the Iris sample distributed with scikit-learn.
 
 # Exercise 5: Basic and three-dimensional Matplotlib plots
 
@@ -529,13 +572,29 @@ python -m pip install openpyxl matplotlib scikit-learn certifi
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 results = Path("results")
 results.mkdir(parents=True, exist_ok=True)
@@ -547,6 +606,7 @@ axis.plot(x, y)
 axis.set(xlabel="x-axis", ylabel="y-axis", title="My First Graph")
 figure.tight_layout()
 figure.savefig(results / "ex5_A_basic_plot.png", dpi=150)
+show_saved_figure()
 plt.close(figure)
 print("Saved results/ex5_A_basic_plot.png")
 ```
@@ -555,13 +615,29 @@ print("Saved results/ex5_A_basic_plot.png")
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 results = Path("results")
 results.mkdir(parents=True, exist_ok=True)
@@ -578,6 +654,7 @@ axis.set(xlabel="Day", ylabel="Temperature", title="All Features Discussed")
 axis.legend()
 figure.tight_layout()
 figure.savefig(results / "ex5_B_multiple_series.png", dpi=150)
+show_saved_figure()
 plt.close(figure)
 print("Saved results/ex5_B_multiple_series.png")
 ```
@@ -586,13 +663,29 @@ print("Saved results/ex5_B_multiple_series.png")
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 results = Path("results")
 results.mkdir(parents=True, exist_ok=True)
@@ -606,6 +699,7 @@ for index, axis in enumerate(axes.flat):
     axis.set(title="{} Rep".format(index + 1), xlabel="Day", ylabel="Temperature")
 figure.tight_layout()
 figure.savefig(results / "ex5_C_subplots.png", dpi=150)
+show_saved_figure()
 plt.close(figure)
 print("Saved results/ex5_C_subplots.png")
 ```
@@ -614,13 +708,29 @@ print("Saved results/ex5_C_subplots.png")
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 results = Path("results")
 results.mkdir(parents=True, exist_ok=True)
@@ -637,6 +747,7 @@ axis.set(title="3D Surface Plot", xlabel="X Axis", ylabel="Y Axis", zlabel="Z Ax
 figure.colorbar(surface, ax=axis, shrink=0.6, aspect=12)
 figure.tight_layout()
 figure.savefig(results / "ex5_D_3d_surface.png", dpi=150)
+show_saved_figure()
 plt.close(figure)
 print("Saved results/ex5_D_3d_surface.png")
 ```
@@ -644,6 +755,8 @@ print("Saved results/ex5_D_3d_surface.png")
 ## ex5.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install matplotlib numpy
 ```
 
@@ -655,6 +768,7 @@ python -m pip install matplotlib numpy
 """Draw an India-centered map and mark several cities with Basemap."""
 
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -662,8 +776,23 @@ os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab
 
 import matplotlib
 
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 from mpl_toolkits.basemap import Basemap
 
 
@@ -706,6 +835,7 @@ def main():
     figure.tight_layout()
     output_path = RESULTS / "ex6_india_map.png"
     figure.savefig(output_path, dpi=160)
+    show_saved_figure()
     plt.close(figure)
     print("Map saved to:", output_path)
 
@@ -717,6 +847,8 @@ if __name__ == "__main__":
 ## ex6.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install numpy matplotlib basemap
 ```
 
@@ -728,13 +860,29 @@ This version uses Basemap’s built-in boundaries and needs no downloaded shapef
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 import pandas as pd
 from sklearn.datasets import load_diabetes
 
@@ -764,6 +912,7 @@ def univariate_analysis():
     axes.ravel()[0].figure.tight_layout()
     path = RESULTS / "ex7_univariate_histograms.png"
     axes.ravel()[0].figure.savefig(path, dpi=140)
+    show_saved_figure()
     plt.close(axes.ravel()[0].figure)
     print("Histogram saved to:", path)
 
@@ -808,13 +957,29 @@ linear_regression_analysis(features, target)
 
 ```python
 import os
+import sys
 import tempfile
 from pathlib import Path
 
 os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab-matplotlib"))
 import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_diabetes
@@ -857,6 +1022,7 @@ def logistic_regression_analysis(features, target):
     figure.tight_layout()
     path = RESULTS / "ex7_logistic_confusion_matrix.png"
     figure.savefig(path, dpi=140)
+    show_saved_figure()
     plt.close(figure)
     print("Confusion matrix plot saved to:", path)
 
@@ -931,10 +1097,12 @@ pima_multiple_regression()
 ## ex7.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install numpy pandas matplotlib scikit-learn
 ```
 
-7.A-C use scikit-learn’s built-in diabetes sample. 7.D downloads the Pima CSV into `data/pima_diabetes.csv` on first run if it is not already there; that first download needs internet.
+7.A-C use scikit-learn’s built-in diabetes sample. 7.D downloads the Pima CSV into `data/pima_diabetes.csv` on first run if it is not already there; that first download needs internet. If unavailable, section 7.D prints a message and the rest of the program completes.
 
 # Exercise 8: Z-scores and normal distribution
 
@@ -945,6 +1113,7 @@ python -m pip install numpy pandas matplotlib scikit-learn
 
 import math
 import os
+import sys
 import random
 import statistics
 import tempfile
@@ -954,8 +1123,23 @@ os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab
 
 import matplotlib
 
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 
 RESULTS = Path("results")
@@ -993,6 +1177,7 @@ def main():
     figure.tight_layout()
     output_path = RESULTS / "ex8_z_scores.png"
     figure.savefig(output_path, dpi=150)
+    show_saved_figure()
     plt.close(figure)
     print("Plot saved to:", output_path)
 
@@ -1004,6 +1189,8 @@ if __name__ == "__main__":
 ## ex8.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install matplotlib
 ```
 
@@ -1015,6 +1202,7 @@ python -m pip install matplotlib
 """Compute pairwise correlations and save a heatmap with scatter plots."""
 
 import os
+import sys
 import random
 import tempfile
 from pathlib import Path
@@ -1023,8 +1211,23 @@ os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab
 
 import matplotlib
 
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 
 RESULTS = Path("results")
@@ -1079,6 +1282,7 @@ def main():
     figure.tight_layout()
     output_path = RESULTS / "ex9_correlations.png"
     figure.savefig(output_path, dpi=150)
+    show_saved_figure()
     plt.close(figure)
     print("Plots saved to:", output_path)
 
@@ -1090,6 +1294,8 @@ if __name__ == "__main__":
 ## ex9.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install matplotlib
 ```
 
@@ -1101,6 +1307,7 @@ python -m pip install matplotlib
 """Fit and plot a simple linear regression using standard-library math."""
 
 import os
+import sys
 import tempfile
 from pathlib import Path
 
@@ -1108,8 +1315,23 @@ os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "fds-lab
 
 import matplotlib
 
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def show_saved_figure():
+    backend = matplotlib.get_backend().lower()
+    interactive_backend = backend.startswith(("gtk", "macosx", "qt", "tk", "wx"))
+    linux_display = bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    headless_linux = sys.platform.startswith("linux") and not linux_display
+    if interactive_backend and not headless_linux:
+        try:
+            plt.show()
+        except Exception as error:
+            print("Plot saved, but its window could not be opened:", error)
+    else:
+        print("Plot saved; no interactive graph window is available. "
+              "On Ubuntu/Debian, install python3-tk and run from a graphical desktop.")
+
 
 
 RESULTS = Path("results")
@@ -1147,6 +1369,7 @@ def main():
     figure.tight_layout()
     output_path = RESULTS / "ex10_linear_regression.png"
     figure.savefig(output_path, dpi=150)
+    show_saved_figure()
     plt.close(figure)
     print("Plot saved to:", output_path)
 
@@ -1158,16 +1381,8 @@ if __name__ == "__main__":
 ## ex10.installs
 
 ```bash
+# Ubuntu/Debian desktop plot windows (skip on a headless machine)
+sudo apt-get install -y python3-tk
 python -m pip install matplotlib
 ```
-------------------------------------------marakkama itha kudunga daa-------------------------------------------------------
 
-
-git credential-cache exit 2>/dev/null
-rm -f ~/.gitconfig ~/.git-credentials ~/.config/git/config ~/.config/git/credentials
-rm -rf ~/.config/gh
-
-git -C ~/fdscode config --local --unset user.name 2>/dev/null
-git -C ~/fdscode config --local --unset user.email 2>/dev/null
-
-cd ~ && rm -rf fdscode
